@@ -1,0 +1,21 @@
+{
+  "name": "analystiq-backend",
+  "version": "1.0.0",
+  "description": "AnalystIQ backend — Express API with Stripe, Anthropic, and Finnhub integrations",
+  "main": "analystiq-backend-FULL.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "prisma": "^5.19.1",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "@prisma/client": "^5.19.1",
+    "ws": "^8.18.0",
+    "node-fetch": "^2.7.0",
+    "@anthropic-ai/sdk": "^0.27.3",
+    "stripe": "^16.12.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
