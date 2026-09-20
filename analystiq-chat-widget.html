@@ -1,0 +1,277 @@
+<!--
+  ANALYSTIQ ADVISOR CHAT WIDGET
+  =============================
+  Drop this before </body> on any page of your site. It renders a
+  floating "Ask the Advisor" button; clicking it opens a chat panel
+  matching your existing navy/gold design.
+
+  WIRING: it calls POST /api/advisor/chat on YOUR OWN backend
+  (the marketiq-backend-FULL.js file), sending { userId, message }.
+  That backend route already exists and calls Claude for you —
+  this file does not call Anthropic directly, so no API key belongs
+  in this file at all.
+
+  Before using: replace CURRENT_USER_ID below with however your site
+  actually identifies a logged-in visitor (e.g. read it from a cookie,
+  a login session, or generate+store a UUID per browser for anonymous
+  free-tier chat).
+-->
+
+<style>
+  #aiq-launcher {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 999;
+    background: #0B1D33;
+    color: #F3EFE5;
+    border: 1px solid #C6A15B;
+    border-radius: 2px;
+    padding: 14px 22px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 12px 30px -10px rgba(11,29,51,0.5);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  #aiq-launcher:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 36px -8px rgba(11,29,51,0.55);
+  }
+  #aiq-launcher .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #C6A15B;
+  }
+
+  #aiq-panel {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 1000;
+    width: 380px;
+    max-width: calc(100vw - 40px);
+    height: 520px;
+    max-height: calc(100vh - 56px);
+    background: #F3EFE5;
+    border: 1px solid rgba(11,29,51,0.12);
+    box-shadow: 0 24px 60px -20px rgba(11,29,51,0.5);
+    display: none;
+    flex-direction: column;
+    font-family: 'Source Serif 4', Georgia, serif;
+    overflow: hidden;
+  }
+  #aiq-panel.open { display: flex; }
+
+  #aiq-head {
+    background: #0B1D33;
+    color: #F3EFE5;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: none;
+  }
+  #aiq-head .title {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 0.92rem; letter-spacing: 0.01em;
+  }
+  #aiq-head .dot { width: 7px; height: 7px; border-radius: 50%; background: #C6A15B; }
+  #aiq-close {
+    background: none; border: none; color: rgba(243,239,229,0.65);
+    font-size: 1.1rem; cursor: pointer; line-height: 1; padding: 4px;
+  }
+  #aiq-close:hover { color: #F3EFE5; }
+
+  #aiq-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .aiq-bubble {
+    max-width: 82%;
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border-radius: 2px;
+  }
+  .aiq-bubble.user {
+    align-self: flex-end;
+    background: #1F4C82;
+    color: #F3EFE5;
+  }
+  .aiq-bubble.bot {
+    align-self: flex-start;
+    background: #EAE4D4;
+    color: #101820;
+    border-left: 2px solid #C6A15B;
+  }
+  .aiq-bubble.thinking {
+    align-self: flex-start;
+    background: #EAE4D4;
+    color: #4B5A6B;
+    border-left: 2px solid #C6A15B;
+    font-style: italic;
+  }
+  .aiq-bubble.error {
+    align-self: flex-start;
+    background: #F6E6E1;
+    color: #7A2E20;
+    border-left: 2px solid #C0604A;
+  }
+
+  #aiq-empty {
+    margin: auto;
+    text-align: center;
+    color: #4B5A6B;
+    font-size: 0.88rem;
+    padding: 0 24px;
+  }
+
+  #aiq-inputrow {
+    flex: none;
+    display: flex;
+    gap: 8px;
+    padding: 14px;
+    border-top: 1px solid rgba(11,29,51,0.1);
+    background: #F3EFE5;
+  }
+  #aiq-input {
+    flex: 1;
+    border: 1px solid rgba(11,29,51,0.2);
+    border-radius: 2px;
+    padding: 10px 12px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.9rem;
+    resize: none;
+    background: #fff;
+    color: #101820;
+  }
+  #aiq-input:focus {
+    outline: none;
+    border-color: #C6A15B;
+  }
+  #aiq-send {
+    flex: none;
+    background: #0B1D33;
+    color: #F3EFE5;
+    border: 1px solid #0B1D33;
+    border-radius: 2px;
+    padding: 0 18px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  #aiq-send:hover { background: #122A47; }
+  #aiq-send:disabled { opacity: 0.5; cursor: default; }
+
+  @media (max-width: 480px) {
+    #aiq-panel {
+      right: 12px; left: 12px; bottom: 12px;
+      width: auto; height: calc(100vh - 24px);
+    }
+    #aiq-launcher { right: 16px; bottom: 16px; }
+  }
+</style>
+
+<button id="aiq-launcher" onclick="aiqToggle()">
+  <span class="dot"></span> Ask the Advisor
+</button>
+
+<div id="aiq-panel">
+  <div id="aiq-head">
+    <div class="title"><span class="dot"></span> AnalystIQ Advisor</div>
+    <button id="aiq-close" onclick="aiqToggle()">✕</button>
+  </div>
+  <div id="aiq-messages">
+    <div id="aiq-empty">Ask about a filing, a ratio, or how a business model works. The Advisor won't tell you what to buy — but it will help you understand what you're looking at.</div>
+  </div>
+  <div id="aiq-inputrow">
+    <textarea id="aiq-input" rows="1" placeholder="Ask a question..." onkeydown="aiqKeydown(event)"></textarea>
+    <button id="aiq-send" onclick="aiqSend()">Send</button>
+  </div>
+</div>
+
+<script>
+  // CONFIGURE: point this at your backend. If the widget is served from
+  // the same domain as your API, '' (relative path) is fine.
+  const AIQ_API_BASE = 'https://analyst-iq.onrender.com';
+
+  // CONFIGURE: replace with your real user-identification logic.
+  // For now this keeps one anonymous ID per browser via localStorage
+  // is not usable in this preview context — swap in your own session
+  // logic (e.g. a value your login system already sets) before going live.
+  function aiqGetUserId() {
+    return window.AIQ_CURRENT_USER_ID || 'anonymous-demo-user';
+  }
+
+  let aiqOpen = false;
+  let aiqBusy = false;
+
+  function aiqToggle() {
+    aiqOpen = !aiqOpen;
+    document.getElementById('aiq-panel').classList.toggle('open', aiqOpen);
+    if (aiqOpen) document.getElementById('aiq-input').focus();
+  }
+
+  function aiqKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      aiqSend();
+    }
+  }
+
+  function aiqAppendBubble(text, cls) {
+    const empty = document.getElementById('aiq-empty');
+    if (empty) empty.remove();
+    const wrap = document.getElementById('aiq-messages');
+    const div = document.createElement('div');
+    div.className = 'aiq-bubble ' + cls;
+    div.textContent = text;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    return div;
+  }
+
+  async function aiqSend() {
+    if (aiqBusy) return;
+    const input = document.getElementById('aiq-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    input.value = '';
+    aiqAppendBubble(message, 'user');
+    const thinkingBubble = aiqAppendBubble('Thinking...', 'thinking');
+    aiqBusy = true;
+    document.getElementById('aiq-send').disabled = true;
+
+    try {
+      const res = await fetch(AIQ_API_BASE + '/api/advisor/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: aiqGetUserId(),
+          message: message
+        })
+      });
+
+      if (!res.ok) throw new Error('Request failed: ' + res.status);
+
+      const data = await res.json();
+      thinkingBubble.remove();
+      aiqAppendBubble(data.response || 'No response received.', 'bot');
+    } catch (err) {
+      thinkingBubble.remove();
+      aiqAppendBubble('Something went wrong reaching the Advisor. Please try again.', 'error');
+      console.error('AnalystIQ chat error:', err);
+    } finally {
+      aiqBusy = false;
+      document.getElementById('aiq-send').disabled = false;
+    }
+  }
+</script>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Business &amp; Investment Analyst Playbook — AnalystIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Serif+4:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B1D33;
+    --navy:#122A47;
+    --blue:#1F4C82;
+    --gold:#C6A15B;
+    --gold-bright:#E3C482;
+    --paper:#F3EFE5;
+    --paper-line:rgba(11,29,51,0.09);
+    --ink:#101820;
+    --ink-soft:#4B5A6B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    line-height:1.6;
+  }
+  h1,h2,h3{ font-family:'Fraunces', serif; color:var(--navy-deep); margin:0; }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 32px;}
+  @media (max-width:640px){ .wrap{padding:0 18px;} }
+
+  header{
+    background:var(--navy-deep);
+    padding:20px 0;
+    border-bottom:1px solid rgba(230,196,130,0.2);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;color:var(--paper);}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+  .nav-links{display:flex;gap:28px;font-size:0.92rem;}
+  .nav-links a{color:rgba(243,239,229,0.7);text-decoration:none;}
+  .nav-links a.active{color:var(--gold-bright);}
+  .nav-links a:hover{color:var(--gold-bright);}
+
+  .hero{
+    background:linear-gradient(180deg, var(--navy-deep) 0%, var(--navy) 100%);
+    padding:70px 0;
+    color:var(--paper);
+  }
+  .hero-inner{
+    display:grid;
+    grid-template-columns:0.85fr 1.15fr;
+    gap:56px;
+    align-items:center;
+  }
+  @media (max-width:800px){ .hero-inner{grid-template-columns:1fr;} }
+
+  .book-frame{
+    aspect-ratio:3/4;
+    background:linear-gradient(160deg,var(--navy) 0%, var(--navy-deep) 100%);
+    border:1px solid rgba(230,196,130,0.3);
+    position:relative;
+    max-width:280px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:22px 20px;
+  }
+  .book-frame .diag{
+    position:absolute;
+    right:26px;
+    width:26px;
+    height:1.5px;
+    background:var(--gold);
+    transform:rotate(-45deg);
+  }
+  .book-frame .diag.d1{top:26%;}
+  .book-frame .diag.d2{top:47%;}
+  .book-frame .diag.d3{top:68%;}
+  .book-frame .diag.d4{top:89%;}
+
+  .book-frame .eyebrow{
+    color:var(--gold-bright);
+    font-family:'Source Serif 4',serif;
+    font-size:0.6rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  .book-frame .eyebrow-rule{
+    width:26px;height:1.5px;background:var(--gold);
+    margin-top:8px;
+  }
+
+  .book-frame .cover-title{
+    color:var(--paper);
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:1.35rem;
+    line-height:1.18;
+    margin-top:16px;
+  }
+  .book-frame .cover-tagline{
+    color:var(--gold-bright);
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:0.68rem;
+    line-height:1.5;
+    margin-top:14px;
+  }
+  .book-frame .cover-desc{
+    color:rgba(243,239,229,0.6);
+    font-size:0.58rem;
+    line-height:1.5;
+    margin-top:8px;
+    max-width:85%;
+  }
+
+  .book-frame .cover-author{
+    border-top:1px solid rgba(230,196,130,0.35);
+    padding-top:10px;
+  }
+  .book-frame .cover-author .name{
+    color:var(--paper);
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:0.78rem;
+  }
+  .book-frame .cover-author .role{
+    color:rgba(243,239,229,0.55);
+    font-size:0.6rem;
+    margin-top:2px;
+  }
+  .book-frame .cover-footer{
+    border-top:1px solid rgba(230,196,130,0.35);
+    padding-top:8px;
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .book-frame .cover-tags{
+    color:rgba(243,239,229,0.6);
+    font-size:0.5rem;
+    letter-spacing:0.04em;
+    line-height:1.6;
+  }
+  .book-frame .cover-num{
+    color:var(--gold);
+    font-size:0.55rem;
+    letter-spacing:0.04em;
+    flex:none;
+  }
+
+  .hero-copy .kicker{color:var(--gold-bright);font-size:0.88rem;font-style:italic;margin-bottom:14px;}
+  .hero-copy h1{font-size:clamp(1.9rem,3.4vw,2.5rem);line-height:1.2;}
+  .hero-copy p{margin-top:18px;color:rgba(243,239,229,0.75);font-size:1.05rem;max-width:48ch;}
+
+  .price-block{
+    margin-top:28px;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .price-block .amt{font-family:'Fraunces',serif;font-size:2.1rem;color:var(--gold-bright);}
+  .price-block .promo{font-size:0.9rem;color:rgba(243,239,229,0.6);font-style:italic;}
+
+  .buy-actions{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap;}
+  .btn-gold{
+    background:var(--gold); color:var(--navy-deep);
+    padding:14px 28px; border:1px solid var(--gold); border-radius:2px;
+    font-family:'Source Serif 4',serif; font-weight:600; font-size:1rem;
+    cursor:pointer;
+  }
+  .btn-gold:hover{background:var(--gold-bright);}
+  .btn-ghost{
+    padding:14px 26px;border-radius:2px;
+    color:var(--paper); border:1px solid rgba(243,239,229,0.35);
+    font-size:1rem; background:none; cursor:pointer;
+    font-family:'Source Serif 4',serif;
+    text-decoration:none;
+  }
+  .btn-ghost:hover{border-color:var(--gold-bright);}
+
+  section{padding:70px 0;}
+  .section-head{max-width:640px;margin-bottom:40px;}
+  .kicker{color:var(--blue);font-size:0.85rem;font-style:italic;margin-bottom:10px;}
+  .section-head h2{font-size:1.8rem;}
+  .section-head p{margin-top:14px;color:var(--ink-soft);}
+
+  .toc{
+    border-top:1px solid var(--paper-line);
+  }
+  .toc-item{
+    display:flex;
+    justify-content:space-between;
+    padding:16px 0;
+    border-bottom:1px solid var(--paper-line);
+    gap:20px;
+  }
+  .toc-item .name{font-size:1rem;color:var(--ink);}
+  .toc-item .desc{font-size:0.9rem;color:var(--ink-soft);margin-top:4px;}
+  .toc-item .pg{color:var(--gold);font-family:'Fraunces',serif;flex:none;}
+
+  .cta-band{
+    background:var(--navy-deep);
+    color:var(--paper);
+    text-align:center;
+  }
+  .cta-band h2{color:var(--paper);font-size:1.7rem;}
+  .cta-band p{color:rgba(243,239,229,0.7);margin-top:14px;max-width:50ch;margin-left:auto;margin-right:auto;}
+  .cta-band .buy-actions{justify-content:center;margin-top:24px;}
+
+  #buy-status{
+    margin-top:16px;
+    font-size:0.88rem;
+    color:var(--gold-bright);
+    display:none;
+  }
+  #buy-status.show{display:block;}
+  #buy-status.error{color:#E0A392;}
+
+  footer{background:var(--navy-deep);color:rgba(243,239,229,0.5);padding:34px 0;font-size:0.85rem;text-align:center;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span> AnalystIQ</div>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="analystiq-dashboard.html">Dashboard</a>
+      <a href="#" class="active">The Guide</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="book-frame">
+      <span class="diag d1"></span>
+      <span class="diag d2"></span>
+      <span class="diag d3"></span>
+      <span class="diag d4"></span>
+
+      <div>
+        <div class="eyebrow">Analyst Education Series</div>
+        <div class="eyebrow-rule"></div>
+        <div class="cover-title">The Business and Investment Analyst Playbook</div>
+        <div class="cover-tagline">Analyze businesses. Evaluate stocks.<br>Make better investment decisions.</div>
+        <div class="cover-desc">A practical framework for reading financial statements, measuring growth, assessing risk, and understanding value.</div>
+      </div>
+
+      <div>
+        <div class="cover-author">
+          <div class="name">Brayden Bishop</div>
+          <div class="role">Author &amp; Founder, AnalystIQ</div>
+        </div>
+        <div class="cover-footer">
+          <div class="cover-tags">Business Analysis · Financial Statements<br>Valuation · Risk</div>
+          <div class="cover-num">Playbook / 01</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-copy">
+      <div class="kicker">The Guide</div>
+      <h1>Everything the Advisor knows, in one reference.</h1>
+      <p>Valuation frameworks, accounting fundamentals, and the working vocabulary of a professional analyst — the same material AnalystIQ draws on, collected into one book you can read cover to cover or keep on the desk.</p>
+      <div class="price-block">
+        <span class="amt">$50</span>
+        <span class="promo">code ANALYSTIQ10 takes 10% off at checkout</span>
+      </div>
+      <div class="buy-actions">
+        <button class="btn-gold" onclick="buyGuide()">Buy the ebook — $50</button>
+        <a class="btn-ghost" href="#contents">See what's inside</a>
+      </div>
+      <div id="buy-status"></div>
+    </div>
+  </div>
+</section>
+
+<section id="contents">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Table of contents</div>
+      <h2>What's inside</h2>
+      <p>Eighty pages, organized the way a working analyst actually thinks through a company — from reading the numbers to reasoning about what they mean.</p>
+    </div>
+    <div class="toc">
+      <div class="toc-item">
+        <div><div class="name">Reading the Three Statements</div><div class="desc">Income statement, balance sheet, and cash flow — what each one is actually telling you.</div></div>
+        <div class="pg">01</div>
+      </div>
+      <div class="toc-item">
+        <div><div class="name">Ratios That Matter</div><div class="desc">Liquidity, leverage, and profitability ratios, and when each one is worth your attention.</div></div>
+        <div class="pg">02</div>
+      </div>
+      <div class="toc-item">
+        <div><div class="name">Valuation Frameworks</div><div class="desc">DCF, comparables, and multiples — their assumptions and where they break down.</div></div>
+        <div class="pg">03</div>
+      </div>
+      <div class="toc-item">
+        <div><div class="name">Reading a 10-K Without Losing a Day</div><div class="desc">Where the real information sits, and what's boilerplate.</div></div>
+        <div class="pg">04</div>
+      </div>
+      <div class="toc-item">
+        <div><div class="name">Business Model Patterns</div><div class="desc">Recurring revenue, unit economics, and moats — recognizing them across industries.</div></div>
+        <div class="pg">05</div>
+      </div>
+      <div class="toc-item">
+        <div><div class="name">Building Your Own Models</div><div class="desc">Structuring a spreadsheet that holds up under your own scrutiny.</div></div>
+        <div class="pg">06</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Included free with the Master Key</h2>
+    <p>Buy the $299 lifetime Master Key instead and this guide comes with it — along with everything in the Core plan, permanently.</p>
+    <div class="buy-actions">
+      <button class="btn-gold" onclick="buyGuide()">Just buy the guide — $50</button>
+      <a class="btn-ghost" href="/#pricing">See the Master Key</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© 2026 AnalystIQ. Educational material only — not personalized financial advice.</div>
+</footer>
+
+<script>
+  // CONFIGURE: point this at your deployed backend.
+  const API_BASE = 'https://analyst-iq.onrender.com';
+
+  async function buyGuide() {
+    const status = document.getElementById('buy-status');
+    status.className = 'show';
+    status.textContent = 'Setting up checkout...';
+
+    try {
+      // CONFIGURE: replace with however your site identifies the current
+      // visitor (session, login, or an anonymous ID) — same as the chat widget.
+      const userId = window.AIQ_CURRENT_USER_ID || 'anonymous-demo-user';
+
+      const res = await fetch(`${API_BASE}/api/checkout/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, priceAmount: 50 })
+      });
+
+      if (!res.ok) throw new Error('Checkout failed: ' + res.status);
+      const data = await res.json();
+
+      if (data.url) {
+        window.location.href = data.url; // sends the visitor to Stripe's hosted checkout
+      } else {
+        throw new Error('No checkout URL returned.');
+      }
+    } catch (err) {
+      console.error('Guide checkout error:', err);
+      status.className = 'show error';
+      status.textContent = "Couldn't start checkout — the backend may still need your Stripe keys configured.";
+    }
+  }
+</script>
+
+</body>
+</html>

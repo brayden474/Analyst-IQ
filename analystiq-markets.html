@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markets — AnalystIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Serif+4:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy-deep:#0B1D33;
+    --navy:#122A47;
+    --blue:#1F4C82;
+    --gold:#C6A15B;
+    --gold-bright:#E3C482;
+    --paper:#F3EFE5;
+    --paper-line:rgba(11,29,51,0.09);
+    --ink:#101820;
+    --ink-soft:#4B5A6B;
+    --up:#3F7A4E;
+    --down:#B5473A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+  }
+  header{
+    background:var(--navy-deep);
+    color:var(--paper);
+    padding:26px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem;
+  }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+  header .subtitle{
+    font-size:0.85rem;
+    color:var(--gold-bright);
+    opacity:0.85;
+  }
+
+  .container{ max-width:1100px; margin:0 auto; padding:32px 24px 60px; }
+
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  h1{ font-family:'Fraunces',serif; font-size:1.6rem; margin:0; color:var(--navy-deep); }
+  #updated-at{ font-size:0.85rem; color:var(--ink-soft); }
+
+  .search-box{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--paper-line);
+    background:#fff;
+    font-family:'Source Serif 4',serif;
+    font-size:0.95rem;
+    margin-bottom:20px;
+  }
+  .search-box:focus{ outline:none; border-color:var(--gold); }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+  }
+  thead th{
+    text-align:left;
+    font-size:0.78rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding:12px 14px;
+    border-bottom:1px solid var(--paper-line);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  thead th:hover{ color:var(--navy-deep); }
+  tbody tr{
+    border-bottom:1px solid var(--paper-line);
+    cursor:pointer;
+  }
+  tbody tr:hover{ background:rgba(198,161,91,0.08); }
+  tbody td{
+    padding:13px 14px;
+    font-size:0.92rem;
+    white-space:nowrap;
+  }
+  .symbol-cell{ font-weight:600; color:var(--navy-deep); }
+  .up{ color:var(--up); }
+  .down{ color:var(--down); }
+  .na{ color:var(--ink-soft); opacity:0.6; }
+
+  #empty-state, #loading-state{
+    padding:40px 0;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:0.95rem;
+  }
+
+  /* Detail panel */
+  #detail-panel{
+    display:none;
+    margin-top:26px;
+    background:#fff;
+    border:1px solid var(--paper-line);
+    padding:24px;
+  }
+  #detail-panel.show{ display:block; }
+  #detail-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  #detail-symbol{ font-family:'Fraunces',serif; font-size:1.3rem; color:var(--navy-deep); }
+  #detail-price{ font-size:1.5rem; font-weight:600; }
+  .close-btn{
+    background:none;
+    border:1px solid var(--paper-line);
+    color:var(--ink-soft);
+    padding:6px 12px;
+    font-family:'Source Serif 4',serif;
+    cursor:pointer;
+  }
+  .close-btn:hover{ border-color:var(--gold); color:var(--navy-deep); }
+  .metrics-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .metric-box{
+    background:var(--paper);
+    padding:12px 14px;
+  }
+  .metric-label{ font-size:0.75rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; }
+  .metric-value{ font-size:1.05rem; font-weight:600; color:var(--navy-deep); margin-top:3px; }
+  canvas{ max-height:280px; }
+  .chart-note{ font-size:0.78rem; color:var(--ink-soft); margin-top:10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span> AnalystIQ</div>
+  <div class="subtitle">Live Markets</div>
+</header>
+
+<div class="container">
+  <div class="top-row">
+    <h1>Markets Overview</h1>
+    <div id="updated-at"></div>
+  </div>
+
+  <input type="text" class="search-box" id="search-input" placeholder="Filter by symbol..." oninput="renderTable()">
+
+  <div id="loading-state">Loading market data...</div>
+  <div id="empty-state" style="display:none;">No symbols match that filter.</div>
+
+  <table id="market-table" style="display:none;">
+    <thead>
+      <tr>
+        <th onclick="sortBy('symbol')">Symbol</th>
+        <th onclick="sortBy('price')">Price</th>
+        <th onclick="sortBy('changePercent')">Change %</th>
+        <th onclick="sortBy('peRatio')">P/E</th>
+        <th onclick="sortBy('dividendYield')">Dividend Yield</th>
+        <th onclick="sortBy('marketCap')">Market Cap</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <div id="detail-panel">
+    <div id="detail-header">
+      <div>
+        <div id="detail-symbol"></div>
+        <div id="detail-price"></div>
+      </div>
+      <button class="close-btn" onclick="closeDetail()">Close</button>
+    </div>
+    <div class="metrics-row" id="detail-metrics"></div>
+    <canvas id="detail-chart"></canvas>
+    <div class="chart-note">Chart shown is a placeholder trend line. Wiring in real historical price data is a next step — see notes in the dashboard file.</div>
+  </div>
+</div>
+
+<script>
+  // CONFIGURE: point this at your deployed backend.
+  const API_BASE = 'https://analyst-iq.onrender.com';
+
+  let quotes = [];
+  let sortKey = 'symbol';
+  let sortAsc = true;
+  let chartInstance = null;
+
+  async function loadMarketData() {
+    try {
+      const res = await fetch(API_BASE + '/api/market/overview');
+      const data = await res.json();
+      quotes = data.quotes || [];
+
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('market-table').style.display = 'table';
+
+      if (data.updatedAt) {
+        const d = new Date(data.updatedAt);
+        document.getElementById('updated-at').textContent = 'Updated ' + d.toLocaleTimeString();
+      }
+
+      renderTable();
+    } catch (err) {
+      console.error('Failed to load market data:', err);
+      document.getElementById('loading-state').textContent = 'Could not load market data. Is the backend running?';
+    }
+  }
+
+  function formatNum(val, decimals = 2) {
+    if (val === null || val === undefined || isNaN(val)) return '<span class="na">—</span>';
+    return Number(val).toFixed(decimals);
+  }
+
+  function formatMarketCap(val) {
+    if (val === null || val === undefined || isNaN(val)) return '<span class="na">—</span>';
+    // Finnhub returns market cap in millions
+    if (val >= 1_000_000) return '$' + (val / 1_000_000).toFixed(2) + 'T';
+    if (val >= 1_000) return '$' + (val / 1_000).toFixed(2) + 'B';
+    return '$' + val.toFixed(0) + 'M';
+  }
+
+  function sortBy(key) {
+    if (sortKey === key) {
+      sortAsc = !sortAsc;
+    } else {
+      sortKey = key;
+      sortAsc = true;
+    }
+    renderTable();
+  }
+
+  function renderTable() {
+    const filter = document.getElementById('search-input').value.trim().toUpperCase();
+    let rows = quotes.filter(q => q.symbol.includes(filter));
+
+    rows.sort((a, b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (av === null || av === undefined) av = -Infinity;
+      if (bv === null || bv === undefined) bv = -Infinity;
+      if (typeof av === 'string') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+      return sortAsc ? av - bv : bv - av;
+    });
+
+    const tbody = document.getElementById('table-body');
+    const emptyState = document.getElementById('empty-state');
+    const table = document.getElementById('market-table');
+
+    if (rows.length === 0) {
+      table.style.display = 'none';
+      emptyState.style.display = 'block';
+      return;
+    }
+    table.style.display = 'table';
+    emptyState.style.display = 'none';
+
+    tbody.innerHTML = rows.map(q => {
+      const changeClass = q.changePercent > 0 ? 'up' : q.changePercent < 0 ? 'down' : '';
+      const changeSign = q.changePercent > 0 ? '+' : '';
+      return `
+        <tr onclick="openDetail('${q.symbol}')">
+          <td class="symbol-cell">${q.symbol}</td>
+          <td>${q.price !== null ? '$' + formatNum(q.price) : '<span class="na">—</span>'}</td>
+          <td class="${changeClass}">${q.changePercent !== null ? changeSign + formatNum(q.changePercent) + '%' : '<span class="na">—</span>'}</td>
+          <td>${formatNum(q.peRatio, 1)}</td>
+          <td>${q.dividendYield !== null ? formatNum(q.dividendYield) + '%' : '<span class="na">—</span>'}</td>
+          <td>${formatMarketCap(q.marketCap)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function openDetail(symbol) {
+    const q = quotes.find(x => x.symbol === symbol);
+    if (!q) return;
+
+    document.getElementById('detail-panel').classList.add('show');
+    document.getElementById('detail-symbol').textContent = q.symbol;
+
+    const changeClass = q.changePercent > 0 ? 'up' : q.changePercent < 0 ? 'down' : '';
+    const changeSign = q.changePercent > 0 ? '+' : '';
+    document.getElementById('detail-price').innerHTML =
+      (q.price !== null ? '$' + formatNum(q.price) : '—') +
+      ` <span class="${changeClass}" style="font-size:1rem;">${q.changePercent !== null ? changeSign + formatNum(q.changePercent) + '%' : ''}</span>`;
+
+    document.getElementById('detail-metrics').innerHTML = `
+      <div class="metric-box"><div class="metric-label">52-Week High</div><div class="metric-value">${q.high52w !== null ? '$' + formatNum(q.high52w) : '—'}</div></div>
+      <div class="metric-box"><div class="metric-label">52-Week Low</div><div class="metric-value">${q.low52w !== null ? '$' + formatNum(q.low52w) : '—'}</div></div>
+      <div class="metric-box"><div class="metric-label">P/E Ratio</div><div class="metric-value">${formatNum(q.peRatio, 1)}</div></div>
+      <div class="metric-box"><div class="metric-label">Dividend Yield</div><div class="metric-value">${q.dividendYield !== null ? formatNum(q.dividendYield) + '%' : '—'}</div></div>
+      <div class="metric-box"><div class="metric-label">Market Cap</div><div class="metric-value">${formatMarketCap(q.marketCap)}</div></div>
+    `;
+
+    renderPlaceholderChart(q);
+    document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderPlaceholderChart(q) {
+    const ctx = document.getElementById('detail-chart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    // Placeholder flat/simple line until a real historical-candle endpoint
+    // exists on the backend. See analystiq-dashboard.html for the same note.
+    const basePrice = q.price || 100;
+    const fakeSeries = Array.from({ length: 20 }, (_, i) => basePrice + (Math.random() - 0.5) * (basePrice * 0.01));
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: fakeSeries.map((_, i) => i),
+        datasets: [{
+          data: fakeSeries,
+          borderColor: '#1F4C82',
+          backgroundColor: 'rgba(31,76,130,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { display: false },
+          y: { display: true, grid: { color: 'rgba(11,29,51,0.06)' } }
+        }
+      }
+    });
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-panel').classList.remove('show');
+  }
+
+  loadMarketData();
+  setInterval(loadMarketData, 60 * 1000); // matches backend refresh interval
+</script>
+
+</body>
+</html>

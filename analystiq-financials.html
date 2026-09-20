@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financials — AnalystIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Serif+4:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B1D33; --blue:#1F4C82; --gold:#C6A15B; --gold-bright:#E3C482;
+    --paper:#F3EFE5; --paper-line:rgba(11,29,51,0.09); --ink:#101820; --ink-soft:#4B5A6B;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'Source Serif 4', Georgia, serif; }
+  header{ background:var(--navy-deep); color:var(--paper); padding:26px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+  .brand{ display:flex;align-items:center;gap:10px; font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem; }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+  header .subtitle{ font-size:0.85rem; color:var(--gold-bright); opacity:0.85; }
+  .container{ max-width:820px; margin:0 auto; padding:32px 24px 60px; }
+  h1{ font-family:'Fraunces',serif; font-size:1.6rem; margin:0 0 18px; color:var(--navy-deep); }
+
+  .search-row{ display:flex; gap:10px; margin-bottom:24px; }
+  .search-row input{
+    flex:1; padding:12px 14px; border:1px solid var(--paper-line);
+    background:#fff; font-family:'Source Serif 4',serif; font-size:0.95rem;
+  }
+  .search-row input:focus{ outline:none; border-color:var(--gold); }
+  .search-row button{
+    padding:12px 22px; background:var(--navy-deep); color:var(--paper);
+    border:1px solid var(--navy-deep); font-family:'Source Serif 4',serif;
+    cursor:pointer; font-size:0.95rem;
+  }
+  .search-row button:hover{ background:var(--blue); }
+
+  .tabs{ display:flex; gap:4px; margin-bottom:0; border-bottom:1px solid var(--paper-line); }
+  .tab{
+    padding:10px 18px; cursor:pointer; font-size:0.9rem; color:var(--ink-soft);
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab.active{ color:var(--navy-deep); border-bottom-color:var(--gold); font-weight:600; }
+
+  .period-tabs{ display:flex; gap:8px; margin:16px 0; }
+  .period-btn{
+    padding:6px 14px; border:1px solid var(--paper-line); background:#fff;
+    font-family:'Source Serif 4',serif; font-size:0.82rem; cursor:pointer; color:var(--ink-soft);
+  }
+  .period-btn.active{ border-color:var(--gold); color:var(--navy-deep); background:rgba(198,161,91,0.1); }
+
+  table{ width:100%; border-collapse:collapse; background:#fff; }
+  tbody tr{ border-bottom:1px solid var(--paper-line); }
+  tbody td{ padding:10px 12px; font-size:0.88rem; }
+  tbody td:first-child{ color:var(--ink-soft); }
+  tbody td:last-child{ text-align:right; font-weight:600; color:var(--navy-deep); }
+  .section-label{ font-weight:700; color:var(--navy-deep); background:var(--paper); }
+
+  #status{ padding:30px 0; text-align:center; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span> AnalystIQ</div>
+  <div class="subtitle">Financial Statements</div>
+</header>
+
+<div class="container">
+  <h1>Financial Statements</h1>
+  <div class="search-row">
+    <input type="text" id="symbol-input" placeholder="Enter a ticker, e.g. AAPL" onkeydown="if(event.key==='Enter') loadFinancials()">
+    <button onclick="loadFinancials()">Search</button>
+  </div>
+
+  <div id="status">Search a ticker to see its recent filings.</div>
+
+  <div id="content" style="display:none;">
+    <div class="period-tabs" id="period-tabs"></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="incomeStatement" onclick="switchTab('incomeStatement')">Income Statement</div>
+      <div class="tab" data-tab="balanceSheet" onclick="switchTab('balanceSheet')">Balance Sheet</div>
+      <div class="tab" data-tab="cashFlow" onclick="switchTab('cashFlow')">Cash Flow</div>
+    </div>
+    <table><tbody id="statement-body"></tbody></table>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'https://analyst-iq.onrender.com'; // CONFIGURE: point this at your deployed backend.
+
+  let statements = [];
+  let activePeriod = 0;
+  let activeTab = 'incomeStatement';
+
+  async function loadFinancials() {
+    const symbol = document.getElementById('symbol-input').value.trim().toUpperCase();
+    if (!symbol) return;
+
+    const status = document.getElementById('status');
+    const content = document.getElementById('content');
+    content.style.display = 'none';
+    status.style.display = 'block';
+    status.textContent = 'Loading filings for ' + symbol + '...';
+
+    try {
+      const res = await fetch(API_BASE + '/api/market/financials/' + symbol);
+      const data = await res.json();
+
+      if (!data.statements || data.statements.length === 0) {
+        status.textContent = 'No filings found for ' + symbol + '.';
+        return;
+      }
+
+      statements = data.statements;
+      activePeriod = 0;
+      activeTab = 'incomeStatement';
+
+      renderPeriodTabs();
+      renderStatement();
+      status.style.display = 'none';
+      content.style.display = 'block';
+    } catch (err) {
+      console.error('Financials load error:', err);
+      status.textContent = 'Could not load financial statements. Is the backend running?';
+    }
+  }
+
+  function renderPeriodTabs() {
+    const container = document.getElementById('period-tabs');
+    container.innerHTML = statements.map((s, i) => `
+      <button class="period-btn ${i === activePeriod ? 'active' : ''}" onclick="selectPeriod(${i})">
+        FY ${s.year}
+      </button>
+    `).join('');
+  }
+
+  function selectPeriod(i) {
+    activePeriod = i;
+    renderPeriodTabs();
+    renderStatement();
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    renderStatement();
+  }
+
+  function renderStatement() {
+    const period = statements[activePeriod];
+    const rows = period[activeTab] || [];
+    const tbody = document.getElementById('statement-body');
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="2" style="color:var(--ink-soft);">No line items available for this period.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td>${row.label || row.concept || '—'}</td>
+        <td>${formatValue(row.value)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function formatValue(val) {
+    if (val === null || val === undefined || isNaN(val)) return '—';
+    const num = Number(val);
+    const abs = Math.abs(num);
+    let formatted;
+    if (abs >= 1_000_000_000) formatted = (num / 1_000_000_000).toFixed(2) + 'B';
+    else if (abs >= 1_000_000) formatted = (num / 1_000_000).toFixed(2) + 'M';
+    else formatted = num.toLocaleString();
+    return '$' + formatted;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News — AnalystIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Serif+4:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B1D33; --blue:#1F4C82; --gold:#C6A15B; --gold-bright:#E3C482;
+    --paper:#F3EFE5; --paper-line:rgba(11,29,51,0.09); --ink:#101820; --ink-soft:#4B5A6B;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'Source Serif 4', Georgia, serif; }
+  header{ background:var(--navy-deep); color:var(--paper); padding:26px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+  .brand{ display:flex;align-items:center;gap:10px; font-family:'Fraunces',serif;font-weight:600;font-size:1.2rem; }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+  header .subtitle{ font-size:0.85rem; color:var(--gold-bright); opacity:0.85; }
+  .container{ max-width:760px; margin:0 auto; padding:32px 24px 60px; }
+  h1{ font-family:'Fraunces',serif; font-size:1.6rem; margin:0 0 18px; color:var(--navy-deep); }
+  .search-row{ display:flex; gap:10px; margin-bottom:24px; }
+  .search-row input{
+    flex:1; padding:12px 14px; border:1px solid var(--paper-line);
+    background:#fff; font-family:'Source Serif 4',serif; font-size:0.95rem;
+  }
+  .search-row input:focus{ outline:none; border-color:var(--gold); }
+  .search-row button{
+    padding:12px 22px; background:var(--navy-deep); color:var(--paper);
+    border:1px solid var(--navy-deep); font-family:'Source Serif 4',serif;
+    cursor:pointer; font-size:0.95rem;
+  }
+  .search-row button:hover{ background:var(--blue); }
+
+  .article{
+    display:flex; gap:16px; padding:18px 0;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .article img{ width:96px; height:72px; object-fit:cover; background:var(--paper-line); flex-shrink:0; }
+  .article-body{ flex:1; min-width:0; }
+  .article-headline{ font-weight:600; color:var(--navy-deep); margin-bottom:5px; line-height:1.35; }
+  .article-headline a{ color:inherit; text-decoration:none; }
+  .article-headline a:hover{ color:var(--blue); }
+  .article-summary{ font-size:0.88rem; color:var(--ink-soft); line-height:1.5; margin-bottom:6px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .article-meta{ font-size:0.78rem; color:var(--ink-soft); opacity:0.8; }
+
+  #status{ padding:30px 0; text-align:center; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span> AnalystIQ</div>
+  <div class="subtitle">News</div>
+</header>
+
+<div class="container">
+  <h1>Stock News</h1>
+  <div class="search-row">
+    <input type="text" id="symbol-input" placeholder="Enter a ticker, e.g. AAPL" onkeydown="if(event.key==='Enter') loadNews()">
+    <button onclick="loadNews()">Search</button>
+  </div>
+
+  <div id="status">Search a ticker to see its recent headlines.</div>
+  <div id="article-list"></div>
+</div>
+
+<script>
+  const API_BASE = 'https://analyst-iq.onrender.com'; // CONFIGURE: point this at your deployed backend.
+
+  async function loadNews() {
+    const symbol = document.getElementById('symbol-input').value.trim().toUpperCase();
+    if (!symbol) return;
+
+    const status = document.getElementById('status');
+    const list = document.getElementById('article-list');
+    list.innerHTML = '';
+    status.style.display = 'block';
+    status.textContent = 'Loading news for ' + symbol + '...';
+
+    try {
+      const res = await fetch(API_BASE + '/api/market/news/' + symbol);
+      const data = await res.json();
+
+      if (!data.articles || data.articles.length === 0) {
+        status.textContent = 'No recent news found for ' + symbol + '.';
+        return;
+      }
+
+      status.style.display = 'none';
+      list.innerHTML = data.articles.map(a => `
+        <div class="article">
+          ${a.image ? `<img src="${a.image}" onerror="this.style.display='none'">` : ''}
+          <div class="article-body">
+            <div class="article-headline"><a href="${a.url}" target="_blank" rel="noopener">${a.headline}</a></div>
+            <div class="article-summary">${a.summary || ''}</div>
+            <div class="article-meta">${a.source || ''}${a.datetime ? ' · ' + new Date(a.datetime).toLocaleDateString() : ''}</div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('News load error:', err);
+      status.textContent = 'Could not load news. Is the backend running?';
+    }
+  }
+</script>
+
+</body>
+</html>

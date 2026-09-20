@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — AnalystIQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Serif+4:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B1D33;
+    --navy:#122A47;
+    --blue:#1F4C82;
+    --gold:#C6A15B;
+    --gold-bright:#E3C482;
+    --paper:#F3EFE5;
+    --paper-line:rgba(11,29,51,0.09);
+    --ink:#101820;
+    --ink-soft:#4B5A6B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--navy-deep);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 20px;
+  }
+  h1{ font-family:'Fraunces', serif; color:var(--navy-deep); margin:0; }
+
+  .card{
+    background:var(--paper);
+    width:100%;
+    max-width:420px;
+    padding:40px 36px;
+    border:1px solid rgba(230,196,130,0.25);
+  }
+
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;
+    color:var(--navy-deep);
+    margin-bottom:30px;
+  }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+
+  h1.title{font-size:1.5rem;margin-bottom:6px;}
+  .subtitle{color:var(--ink-soft);font-size:0.95rem;margin-bottom:28px;}
+
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid rgba(11,29,51,0.2);
+    background:#fff;
+    font-family:'Source Serif 4',serif;
+    font-size:0.95rem;
+    color:var(--ink);
+  }
+  .field input:focus{outline:none;border-color:var(--gold);}
+  .field-hint{font-size:0.78rem;color:var(--ink-soft);margin-top:5px;}
+
+  .submit-btn{
+    width:100%;
+    padding:13px;
+    background:var(--navy-deep);
+    color:var(--paper);
+    border:1px solid var(--navy-deep);
+    font-family:'Source Serif 4',serif;
+    font-size:0.98rem;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .submit-btn:hover{background:var(--blue);}
+  .submit-btn:disabled{opacity:0.55;cursor:default;}
+
+  .switch-mode{
+    text-align:center;
+    margin-top:22px;
+    font-size:0.9rem;
+    color:var(--ink-soft);
+  }
+  .switch-mode button{
+    background:none;border:none;
+    color:var(--blue);
+    text-decoration:underline;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:inherit;
+    padding:0 3px;
+  }
+
+  #form-error{
+    background:#F6E6E1;
+    border-left:2px solid #B5473A;
+    color:#7A2E20;
+    padding:11px 14px;
+    font-size:0.88rem;
+    margin-bottom:18px;
+    display:none;
+  }
+  #form-error.show{display:block;}
+
+  #form-success{
+    background:#E9F1E8;
+    border-left:2px solid #3F7A4E;
+    color:#2C5636;
+    padding:11px 14px;
+    font-size:0.88rem;
+    margin-bottom:18px;
+    display:none;
+  }
+  #form-success.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand"><span class="dot"></span> AnalystIQ</div>
+
+  <h1 class="title" id="form-title">Welcome back</h1>
+  <div class="subtitle" id="form-subtitle">Log in to pick up your research where you left off.</div>
+
+  <div id="form-error"></div>
+  <div id="form-success"></div>
+
+  <form id="auth-form" onsubmit="handleSubmit(event)">
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" required autocomplete="current-password" minlength="8">
+      <div class="field-hint" id="password-hint" style="display:none;">At least 8 characters.</div>
+    </div>
+    <button type="submit" class="submit-btn" id="submit-btn">Log in</button>
+  </form>
+
+  <div class="switch-mode">
+    <span id="switch-text">New to AnalystIQ?</span>
+    <button type="button" onclick="toggleMode()" id="switch-btn">Create an account</button>
+  </div>
+</div>
+
+<script>
+  // CONFIGURE: point this at your deployed backend.
+  const API_BASE = 'https://analyst-iq.onrender.com';
+
+  let mode = 'login'; // or 'signup'
+
+  function toggleMode() {
+    mode = mode === 'login' ? 'signup' : 'login';
+    const isSignup = mode === 'signup';
+
+    document.getElementById('form-title').textContent = isSignup ? 'Create your account' : 'Welcome back';
+    document.getElementById('form-subtitle').textContent = isSignup
+      ? 'Start with the free plan — upgrade any time.'
+      : 'Log in to pick up your research where you left off.';
+    document.getElementById('submit-btn').textContent = isSignup ? 'Create account' : 'Log in';
+    document.getElementById('switch-text').textContent = isSignup ? 'Already have an account?' : 'New to AnalystIQ?';
+    document.getElementById('switch-btn').textContent = isSignup ? 'Log in instead' : 'Create an account';
+    document.getElementById('password-hint').style.display = isSignup ? 'block' : 'none';
+    document.getElementById('password').autocomplete = isSignup ? 'new-password' : 'current-password';
+
+    hideMessages();
+  }
+
+  function hideMessages() {
+    document.getElementById('form-error').classList.remove('show');
+    document.getElementById('form-success').classList.remove('show');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    hideMessages();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const submitBtn = document.getElementById('submit-btn');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === 'signup' ? 'Creating account...' : 'Logging in...';
+
+    try {
+      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+      const res = await fetch(API_BASE + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Something went wrong. Please try again.');
+        return;
+      }
+
+      // Store the session so other pages (dashboard, chat widget, book page)
+      // can read it and identify this user on their own requests.
+      localStorage.setItem('aiq_token', data.token);
+      localStorage.setItem('aiq_user', JSON.stringify(data.user));
+
+      const successEl = document.getElementById('form-success');
+      successEl.textContent = "You're in — redirecting...";
+      successEl.classList.add('show');
+
+      setTimeout(() => {
+        window.location.href = '/'; // CONFIGURE: send them wherever makes sense post-login
+      }, 700);
+
+    } catch (err) {
+      console.error('Auth error:', err);
+      showError('Could not reach the server. Please try again in a moment.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === 'signup' ? 'Create account' : 'Log in';
+    }
+  }
+</script>
+
+</body>
+</html>
