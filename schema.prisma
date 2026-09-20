@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  passwordHash         String
+  tier                 String   @default("FREE")
+  masterKeyPurchased   Boolean  @default(false)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime @default(now())
+
+  chatMessages   ChatMessage[]
+  auditLogs      AuditLog[]
+  memoryProfile  UserMemoryProfile?
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserMemoryProfile {
+  id      String @id @default(cuid())
+  userId  String @unique
+  summary String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  prompt    String
+  response  String
+  status    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model FinancialKnowledge {
+  id      String @id @default(cuid())
+  topic   String
+  content String
+}
